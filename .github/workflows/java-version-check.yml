@@ -1,0 +1,129 @@
+name: Java Version Check
+
+on:
+  push:
+    branches:
+      - '**'
+    paths:
+      - '**/*.java'
+      - '**/pom.xml'
+      - '**/build.gradle'
+      - '**/build.gradle.kts'
+      - '**/gradle.properties'
+      - '**/.java-version'
+  pull_request:
+    branches:
+      - '**'
+    paths:
+      - '**/*.java'
+      - '**/pom.xml'
+      - '**/build.gradle'
+      - '**/build.gradle.kts'
+      - '**/gradle.properties'
+      - '**/.java-version'
+
+jobs:
+  validate-java-version:
+    runs-on: ubuntu-latest
+    name: Validate Java Version Requirements
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Check Java version in Maven projects
+        if: always()
+        run: |
+          echo "Checking Maven projects for Java version compliance..."
+          
+          if find . -name "pom.xml" -type f | grep -q .; then
+            echo "Found Maven projects. Checking pom.xml files..."
+            
+            # Check for Java 8, 9, 10, 11 in Maven properties
+            VIOLATIONS_FOUND=false
+            
+            while IFS= read -r pomfile; do
+              echo "Checking: $pomfile"
+              
+              # Check maven.compiler.source and target
+              if grep -E '<maven\.compiler\.(source|target)>\s*(1\.[5-8]|9|10|11)\s*</maven\.compiler\.(source|target)>' "$pomfile"; then
+                echo "❌ VIOLATION: $pomfile uses JDK 11 or lower"
+                VIOLATIONS_FOUND=true
+              fi
+              
+              # Check java.version property
+              if grep -E '<java\.version>\s*(1\.[5-8]|9|10|11)\s*</java\.version>' "$pomfile"; then
+                echo "❌ VIOLATION: $pomfile uses JDK 11 or lower in java.version property"
+                VIOLATIONS_FOUND=true
+              fi
+              
+              # Check compiler plugin configuration
+              if grep -E '<(source|target)>\s*(1\.[5-8]|9|10|11)\s*</(source|target)>' "$pomfile"; then
+                echo "❌ VIOLATION: $pomfile compiler plugin uses JDK 11 or lower"
+                VIOLATIONS_FOUND=true
+              fi
+            done < <(find . -name "pom.xml" -type f)
+            
+            if [ "$VIOLATIONS_FOUND" = true ]; then
+              echo ""
+              echo "=========================================="
+              echo "JAVA VERSION POLICY VIOLATION DETECTED"
+              echo "=========================================="
+              echo "Repository policy requires JDK 12 or higher."
+              echo "Please update your project to use JDK 17, 21, or latest LTS."
+              echo "See .github/instructions/java-version.instructions.md for details."
+              exit 1
+            else
+              echo "✅ All Maven projects comply with Java version requirements (JDK 12+)"
+            fi
+          else
+            echo "No Maven projects found, skipping Maven check."
+          fi
+          
+      - name: Check Java version in Gradle projects
+        if: always()
+        run: |
+          echo "Checking Gradle projects for Java version compliance..."
+          
+          if find . -name "build.gradle*" -type f | grep -q .; then
+            echo "Found Gradle projects. Checking build.gradle files..."
+            
+            VIOLATIONS_FOUND=false
+            
+            while IFS= read -r gradlefile; do
+              echo "Checking: $gradlefile"
+              
+              # Check for Java 8, 9, 10, 11 in Gradle files
+              if grep -E '(sourceCompatibility|targetCompatibility)\s*=\s*(JavaVersion\.VERSION_(1_[5-8]|9|10|11)|["\x27](1\.[5-8]|9|10|11)["\x27])' "$gradlefile"; then
+                echo "❌ VIOLATION: $gradlefile uses JDK 11 or lower"
+                VIOLATIONS_FOUND=true
+              fi
+              
+              # Check toolchain configuration
+              if grep -E 'languageVersion\s*=\s*JavaLanguageVersion\.of\s*\(\s*(8|9|10|11)\s*\)' "$gradlefile"; then
+                echo "❌ VIOLATION: $gradlefile toolchain uses JDK 11 or lower"
+                VIOLATIONS_FOUND=true
+              fi
+            done < <(find . -name "build.gradle*" -type f)
+            
+            if [ "$VIOLATIONS_FOUND" = true ]; then
+              echo ""
+              echo "=========================================="
+              echo "JAVA VERSION POLICY VIOLATION DETECTED"
+              echo "=========================================="
+              echo "Repository policy requires JDK 12 or higher."
+              echo "Please update your project to use JDK 17, 21, or latest LTS."
+              echo "See .github/instructions/java-version.instructions.md for details."
+              exit 1
+            else
+              echo "✅ All Gradle projects comply with Java version requirements (JDK 12+)"
+            fi
+          else
+            echo "No Gradle projects found, skipping Gradle check."
+          fi
+          
+      - name: Summary
+        if: success()
+        run: |
+          echo "✅ Java version validation passed!"
+          echo "All projects meet the minimum requirement of JDK 12+."
