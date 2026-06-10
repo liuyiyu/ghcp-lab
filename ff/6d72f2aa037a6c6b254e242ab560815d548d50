@@ -1,0 +1,19 @@
+docs/superpowers/specs/2026-06-11-fifa-world-cup-score-collector-design.md
+  s_b9ae1aeb259863::t_36d31e04d74dbe 1-165
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "ff6d72f2aa037a6c6b254e242ab560815d548d50",
+  "prompts": {},
+  "sessions": {
+    "s_b9ae1aeb259863": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "f0b6b466-f25d-4cdd-bf97-94737d091119",
+        "model": "claude-opus-4.6"
+      },
+      "human_author": "Yiyu Liu <yiyli@microsoft.com>"
+    }
+  }
+}
