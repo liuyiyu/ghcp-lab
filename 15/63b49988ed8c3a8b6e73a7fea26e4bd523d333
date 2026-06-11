@@ -1,0 +1,19 @@
+docs/superpowers/specs/2026-06-11-photo-album-design.md
+  s_3a5d2c2fed40af::t_4f6ac9e55fde32 1-132
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "1563b49988ed8c3a8b6e73a7fea26e4bd523d333",
+  "prompts": {},
+  "sessions": {
+    "s_3a5d2c2fed40af": {
+      "agent_id": {
+        "tool": "github-copilot-cli",
+        "id": "1b69aef2-2f39-41df-9a65-32fcceadc74f",
+        "model": "claude-opus-4.6"
+      },
+      "human_author": "Yiyu Liu <yiyli@microsoft.com>"
+    }
+  }
+}
